@@ -1,10 +1,10 @@
-:~  title+'houston'
-    info+'Moon Management Dashboard'
-    color+0x34.394a
-    glob-http+['https://bwyl.nyc3.digitaloceanspaces.com/houston/houston-0.0.3-0v1.bonkr.iqthi.i3ur2.ckfrm.r3qjs.glob' 0v1.bonkr.iqthi.i3ur2.ckfrm.r3qjs]
-    image+'https://bwyl.nyc3.digitaloceanspaces.com/houston/houston.png'
-    base+'houston'
-    version+[0 0 3]
-    website+'https://github.com/assemblycapital/houston'
+:~  title+'artemis'
+    info+'Moon Fleet Manager'
+    color+0x0d.1117
+    glob-ames+[~dalhec-banler 0v0]
+    image+''
+    base+'artemis'
+    version+[1 0 0]
+    website+'https://github.com/abnels/artemis'
     license+''
 ==

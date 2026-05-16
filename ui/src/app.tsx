@@ -1,179 +1,194 @@
-import React, { useEffect, useState } from 'react';
-import { KeyboardEvent } from 'react';
-import { MoonTile } from './components/MoonTile';
-import Urbit from '@urbit/http-api';
-import urbitOb from 'urbit-ob';
-import _ from "lodash";
+import { useEffect, useRef, useState, useMemo } from 'react';
+import type { Moon, Role } from './types';
+import { ROLE_META } from './types';
+import urb from './api';
+import { MoonCard } from './components/MoonCard';
+import { NewMoonModal } from './components/NewMoonModal';
 
-import moonsJpeg from "./assets/moons.jpeg";
-import issMoon from "./assets/issmoon.jpeg";
-
-
-const urb = new Urbit('', '');
-urb.ship = window.ship;
+type Filter = Role | 'all';
 
 export function App() {
-  const [moons, setMoons] = useState([]);
-  const [houstonSub, setHoustonSub] = useState(0);
+  const [moons, setMoons] = useState<Moon[]>([]);
+  const [showNew, setShowNew] = useState(false);
+  const [filter, setFilter] = useState<Filter>('all');
+  const [search, setSearch] = useState('');
+  const subRef = useRef<number>(0);
 
   useEffect(() => {
-    if (!urb || houstonSub) {
-      return;
-    }
-    urb.subscribe({
-      app: "houston",
-      path: "/moons",
-      event: handleHoustonSub,
-      quit: subFail,
-      err: subFail
-    })
-      .then((subscriptionId) => {
-        setHoustonSub(subscriptionId);
+    urb
+      .subscribe({
+        app: 'artemis',
+        path: '/moons',
+        event: (update: { moons: Moon[] }) => {
+          setMoons(update.moons);
+        },
+        quit: () => console.warn('artemis subscription quit'),
+        err: () => console.error('artemis subscription error'),
+      })
+      .then((id) => {
+        subRef.current = id;
       });
-  }, [urb, houstonSub]);
 
-  // unsub on window close or refresh
-  useEffect(() => {
-    window.addEventListener("beforeunload", unsubFunc);
-    return () => {
-      window.removeEventListener("beforeunload", unsubFunc);
+    const cleanup = () => {
+      if (subRef.current) {
+        urb.unsubscribe(subRef.current);
+      }
     };
-  }, [houstonSub]);
-  //
-  const unsubFunc = () => {
-    urb.unsubscribe(houstonSub);
-    urb.delete();
-  };
+    window.addEventListener('beforeunload', cleanup);
+    return () => {
+      window.removeEventListener('beforeunload', cleanup);
+      cleanup();
+    };
+  }, []);
 
-
-  function handleHoustonSub(update: any) {
-    console.log("houston update")
-    setMoons(update["moons"])
-  };
-
-  function subFail() {
-    console.log("fail!")
-  };
-
-  function makeMoon() {
-
-    const patp = document.getElementById('patp-input')! as HTMLInputElement;
-    if (patp.value != "") {
-      makeSpecificMoon()
+  const filtered = useMemo(() => {
+    let list = moons;
+    if (filter !== 'all') {
+      list = list.filter((m) => m.rol === filter);
     }
-    else {
-      urb.poke({
-        app: 'houston',
-        mark: 'houston-action',
-        json: { 'make-moon': null }
-      });
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (m) =>
+          m.who.toLowerCase().includes(q) ||
+          m.nam.toLowerCase().includes(q) ||
+          m.tag.some((t) => t.toLowerCase().includes(q))
+      );
     }
-  };
+    return list;
+  }, [moons, filter, search]);
 
-  function sanitizeMoonInput() {
-    const patp = document.getElementById('patp-input')! as HTMLInputElement;
-
-    if (!urbitOb.isValidPatp(patp.value)) {
-      alert("invalid patp");
-      return false;
-    } else if (urbitOb.clan(patp.value) != "moon") {
-      alert("not a moon");
-      return false;
-    } else if (urbitOb.sein(patp.value) != "~" + window.ship) {
-      alert("not your moon");
-      return false;
-    } else {
-      return true;
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { all: moons.length };
+    for (const m of moons) {
+      c[m.rol] = (c[m.rol] || 0) + 1;
     }
-  }
-
-  function makeSpecificMoon() {
-    if (!sanitizeMoonInput()) return;
-
-    const patp = document.getElementById('patp-input')! as HTMLInputElement;
-
-    if (!window.confirm(`Are you sure you want to create ${patp.value}? If this moon already exists, its keys will be overwritten!`)) {
-      return;
-    }
-
-    urb.poke({
-      app: 'houston',
-      mark: 'houston-action',
-      json: { 'make-my-moon': patp.value }
-    });
-    patp.value = "";
-  }
-
-  function importMoon() {
-    if (!sanitizeMoonInput()) return;
-
-    const patp = document.getElementById('patp-input')! as HTMLInputElement;
-
-    urb.poke({
-      app: 'houston',
-      mark: 'houston-action',
-      json: { 'import-moon': patp.value }
-    });
-    patp.value = "";
-  };
-
+    return c;
+  }, [moons]);
 
   return (
-    <main className="flex justify-center h-screen"
-    >
-      <div
-        className="h-full w-full absolute top-0 left-0"
-        style={{
-          backgroundImage: `url(${issMoon})`,
-          backgroundPosition: 'center center',
-          backgroundSize: 'cover',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed',
-        }}>
+    <div className="min-h-screen bg-void relative overflow-hidden">
+      {/* background — subtle star field */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/4 -right-32 w-96 h-96 rounded-full bg-role-agent/3 blur-3xl animate-glow-pulse" />
+        <div className="absolute bottom-1/4 -left-32 w-80 h-80 rounded-full bg-role-personal/3 blur-3xl animate-glow-pulse" style={{ animationDelay: '1.5s' }} />
       </div>
-      <div className="bg-blue-100 w-full md:w-1/2 lg:w-1/2 xl:w-1/2 \
-                       md:my-3 lg:my-3 xl:my-3 px-4 bg-opacity-80 \
-                      flex flex-col z-20"
-        style={{ backdropFilter: 'blur(36px)' }}>
 
+      <div className="relative max-w-4xl mx-auto px-4 py-8">
+        {/* header */}
+        <header className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              {/* artemis crescent logo */}
+              <div className="relative w-9 h-9">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-lunar-50 to-lunar-100/60" />
+                <div className="absolute top-0.5 left-2 w-7 h-8 rounded-full bg-void" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-lunar-50 tracking-tight">
+                  artemis
+                </h1>
+                <p className="text-xs text-lunar-300 font-mono">
+                  ~{window.ship}
+                </p>
+              </div>
+            </div>
 
-        <h1 className="text-3xl font-bold my-5 text-center">houston</h1>
-
-        <div className="flex flex-row mb-2">
-          <div className="flex-1">
-            <input id={"patp-input"} type="text"
-              className="w-full p-2 inline-block bg-white border-gray-400"
-              placeholder="~sampel-sampel-palnet"
-            />
+            <button
+              onClick={() => setShowNew(true)}
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-void bg-lunar-50 hover:bg-white rounded-lg transition-colors shadow-lg shadow-lunar-50/10"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              New Moon
+            </button>
           </div>
-          <div
-            className="flex-end"
-          >
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold ml-2 py-2 px-4"
-              onClick={makeMoon}
-            >create</button>
 
-            <button className="bg-green-600 hover:bg-green-700 text-white font-bold ml-2 py-2 px-4"
-              onClick={importMoon}
-            >import</button>
+          {/* filter bar */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex gap-1 bg-surface-1 rounded-lg p-1 border border-line/50">
+              {(['all', 'mobile', 'agent', 'dev', 'personal'] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    filter === f
+                      ? 'bg-surface-3 text-lunar-50'
+                      : 'text-lunar-300 hover:text-lunar-100'
+                  }`}
+                >
+                  {f === 'all' ? 'All' : ROLE_META[f].label}
+                  {counts[f] ? (
+                    <span className="ml-1.5 text-lunar-300/60">
+                      {counts[f]}
+                    </span>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+
+            <div className="relative flex-1">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lunar-300"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search moons..."
+                className="w-full bg-surface-1 border border-line/50 rounded-lg pl-10 pr-4 py-2 text-sm text-lunar-50 placeholder:text-lunar-300/40 focus:border-lunar-200/30 transition-colors"
+              />
+            </div>
           </div>
-        </div>
+        </header>
 
-        <div
-          className="flex-end overflow-y-scroll"
-        // style={{
-        //   height:'70%'
-        // }}
-        >
-          {moons.map(mon => (
-            <MoonTile urb={urb}
-              moon={mon}
-              key={mon["who"]}
-            />
-          ))
-          }
-        </div>
+        {/* moon grid */}
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="relative w-20 h-20 mb-6 opacity-30">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-lunar-100 to-lunar-200/40" />
+              <div className="absolute top-1 left-5 w-14 h-18 rounded-full bg-void" />
+            </div>
+            <p className="text-lunar-300 text-sm mb-1">
+              {moons.length === 0
+                ? 'No moons yet'
+                : 'No moons match your filter'}
+            </p>
+            {moons.length === 0 && (
+              <p className="text-lunar-300/60 text-xs">
+                Launch your first moon to get started
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {filtered.map((moon) => (
+              <MoonCard key={moon.who} moon={moon} />
+            ))}
+          </div>
+        )}
+
+        {/* fleet summary */}
+        {moons.length > 0 && (
+          <footer className="mt-8 pt-4 border-t border-line/30 flex justify-between text-xs text-lunar-300/60">
+            <span>{moons.length} moon{moons.length !== 1 ? 's' : ''} in fleet</span>
+            <span>artemis v1.0.0</span>
+          </footer>
+        )}
       </div>
-    </main>
+
+      <NewMoonModal open={showNew} onClose={() => setShowNew(false)} />
+    </div>
   );
 }

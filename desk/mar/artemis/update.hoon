@@ -1,12 +1,12 @@
-/-  houston
+/-  artemis
 =,  format
-|_  upd=update:houston
+|_  upd=update:artemis
 ++  grab
-  |%  
-  ++  noun  update:houston
+  |%
+  ++  noun  update:artemis
   --
 ++  grow
-  |%  
+  |%
   ++  noun  upd
   ++  json
     ?-  -.upd
@@ -14,14 +14,16 @@
       %+  frond:enjs
       %moons
       :-  %a
-      %+  turn  mons.upd
+      %+  turn  ~(val by mons.upd)
         mon-to-json
     ==
   ++  mon-to-json
-    |=  =mon:houston
+    |=  =mon:artemis
     %-  pairs:enjs
-    :~  
+    :~
         ['who' [%s (scot %p who.mon)]]
+        ['nam' [%s nam.mon]]
+        ['rol' [%s rol.mon]]
         ['pub' [%s (scot %ud pub.mon)]]
         ['sec' [%s (scot %ud sec.mon)]]
         ['lif' [%s (scot %ud lif.mon)]]
@@ -35,8 +37,6 @@
   ++  tag-to-json
     |=  tag=@tas
     [%s tag]
-  --  
+  --
 ++  grad  %noun
 --
-
-
