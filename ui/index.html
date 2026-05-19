@@ -3,11 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>artemis</title>
+    <title>Artemis</title>
     <meta name="theme-color" content="#06080f" />
+    <link rel="icon" type="image/svg+xml" href="/apps/artemis/tile.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script>
+      document.cookie.split(';').some(function(c) {
+        var name = c.trim().split('=')[0];
+        if (name.indexOf('urbauth-~') === 0) {
+          window.ship = name.replace('urbauth-~', '');
+          return true;
+        }
+        if (name.indexOf('urbauth-') === 0) {
+          window.ship = name.replace('urbauth-', '');
+          return true;
+        }
+      });
+    </script>
   </head>
   <body class="bg-void text-lunar-50 antialiased">
     <div id="app"></div>

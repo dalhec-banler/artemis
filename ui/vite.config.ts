@@ -14,5 +14,17 @@ export default ({ mode }: { mode: string }) => {
       urbitPlugin({ base: 'artemis', target: SHIP_URL, secure: false }),
       react(),
     ],
+    build: {
+      assetsDir: '.',
+      rollupOptions: {
+        output: {
+          entryFileNames: 'index.js',
+          assetFileNames: ({ name }) => {
+            if (name?.endsWith('.css')) return 'index.css';
+            return '[name][extname]';
+          },
+        },
+      },
+    },
   });
 };
