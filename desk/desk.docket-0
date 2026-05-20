@@ -1,10 +1,9 @@
-:~  title+'artemis'
+:~  title+'Artemis'
     info+'Moon Fleet Manager'
-    color+0x0d.1117
-    glob-ames+[~dalhec-banler 0v0]
-    image+''
-    base+'artemis'
+    color+0xd.1117
+    image+'/apps/artemis/tile.svg'
+    site+/apps/artemis
     version+[1 0 0]
     website+'https://github.com/abnels/artemis'
-    license+''
+    license+'MIT'
 ==
