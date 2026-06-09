@@ -12,7 +12,9 @@ export function App() {
   const [showNew, setShowNew] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
+  const [newestWho, setNewestWho] = useState<string | null>(null);
   const subRef = useRef<number>(0);
+  const knownRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     urb
@@ -20,6 +22,13 @@ export function App() {
         app: 'artemis',
         path: '/moons',
         event: (update: { moons: Moon[] }) => {
+          const incoming = new Set(update.moons.map((m) => m.who));
+          for (const who of incoming) {
+            if (!knownRef.current.has(who)) {
+              setNewestWho(who);
+            }
+          }
+          knownRef.current = incoming;
           setMoons(update.moons);
         },
         quit: () => console.warn('artemis subscription quit'),
@@ -174,7 +183,7 @@ export function App() {
         ) : (
           <div className="space-y-2">
             {filtered.map((moon) => (
-              <MoonCard key={moon.who} moon={moon} />
+              <MoonCard key={moon.who} moon={moon} autoExpand={moon.who === newestWho} />
             ))}
           </div>
         )}

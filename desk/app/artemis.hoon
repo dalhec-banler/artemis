@@ -218,10 +218,15 @@
       [%give %kick ~[/http-response/[eyre-id]] ~]
   ==
 ::
+++  da-path
+  |=  wen=@da
+  ^-  @t
+  (scot:h136 %da wen)
+::
 ++  scry-path
   |=  pax=path
   ^-  path
-  (weld /(scot %p our.bowl)/artemis/(scot %da now.bowl) pax)
+  (weld /(scot %p our.bowl)/artemis/(da-path now.bowl) pax)
 ::
 ++  mons-json
   |=  mons=(map @p mon)
