@@ -152,7 +152,7 @@
     =/  who=ship  (slav %p i.t.t.path)
     ``noun+!>((~(get by mons.state) who))
       [%x %mons ~]
-    ``noun+!>(mons.state)
+    ``artemis-update+!>([%moons mons.state])
   ==
 ++  on-leave  on-leave:def
 ++  on-agent  on-agent:def

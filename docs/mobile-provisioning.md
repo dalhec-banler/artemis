@@ -18,6 +18,7 @@ Artemis already supports:
 - `[%make-moon nam=@t rol=%mobile]`
 - a `%mobile` moon role
 - `/moons` subscription facts
+- `/~/scry/artemis/mons.json` for polling the managed moon list
 - JSON output containing `who`, `nam`, `rol`, and `sed`
 
 The `sed` value is emitted as `%uw`, which is the boot key format consumed by
@@ -35,12 +36,13 @@ NativePlanet Mobile's manual provisioning path.
 
 Two compatible paths are possible:
 
-1. The phone speaks the same Urbit channel API used by the Artemis frontend.
+1. The phone speaks the same Urbit channel API used by the Artemis frontend and
+   polls `/~/scry/artemis/mons.json` for the created moon.
 2. Artemis adds a small authenticated mobile endpoint that creates a `%mobile`
    moon and returns the provisioning fields directly.
 
-The second path is likely simpler for Android, as long as the endpoint stays
-small and does not turn Artemis into a phone-specific app.
+The first path is the current implementation target because it reuses Artemis'
+existing poke API and keeps Artemis from becoming phone-specific.
 
 ## Security Rules
 
