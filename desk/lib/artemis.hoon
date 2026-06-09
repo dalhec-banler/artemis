@@ -57,7 +57,6 @@
     [ship 1 sec:ex:cub ~]
   %-  %-  slog
       :~  leaf+"%artemis moon: {(scow %p ship)}"
-          leaf+(scow %uw (jam seed))
       ==
   =:  who.mon  ship
       nam.mon  nam

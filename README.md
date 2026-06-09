@@ -53,6 +53,10 @@ roles are intended to make a fleet easier to reason about at a glance:
 - `dev`
 - `personal`
 
+`mobile` moons are intended for NativePlanet Mobile phones. See
+[`docs/mobile-provisioning.md`](docs/mobile-provisioning.md) for the current
+phone provisioning direction.
+
 ## Using The API
 
 artemis can be poked by other apps to create, breach, rekey, rename, retag, and reclassify moons.
