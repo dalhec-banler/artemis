@@ -221,7 +221,7 @@
 ++  da-path
   |=  wen=@da
   ^-  @t
-  (scot:h136 %da wen)
+  (scot %da wen)
 ::
 ++  scry-path
   |=  pax=path

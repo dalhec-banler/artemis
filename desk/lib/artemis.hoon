@@ -3,7 +3,7 @@
 ++  da-path
   |=  wen=@da
   ^-  @t
-  (scot:h136 %da wen)
+  (scot %da wen)
 ++  jael-moon
   |=  =mon
   =/  sed=[=ship =udiff:point:jael]
@@ -26,14 +26,14 @@
   =/  ryf=(unit rift)
     .^((unit rift) %j /(scot %p our.bowl)/ryft/(da-path now.bowl)/(scot %p who.mun))
   =|  =mon
-  =/  cic  (pit:nu:cric:crypto 512 (shaz (jam who.mun life eny.bowl)) %b ~)
+  =/  cub  (pit:nu:crub:crypto 256 (shaz (jam who.mun life eny.bowl)))
   =/  =feed:jael
-    [[%2 ~] who.mun (fall ryf 0) [life sec:ex:cic]~]
+    [[%2 ~] who.mun (fall ryf 0) [life sec:ex:cub]~]
   =:  who.mon  who.mun
       nam.mon  nam.mun
       rol.mon  rol.mun
-      pub.mon  pub:ex:cic
-      sec.mon  sec:ex:cic
+      pub.mon  pub:ex:cub
+      sec.mon  sec:ex:cub
       lif.mon  life
       rif.mon  rif.mun
       sed.mon  (jam feed)
@@ -65,9 +65,9 @@
         "can't create keys for {(scow %p ship)}, which belongs to {(scow %p seg)}"
     ~
   =|  =mon
-  =/  cic  (pit:nu:cric:crypto 512 (shaz (jam ship life=1 eny.bowl)) %b ~)
+  =/  cub  (pit:nu:crub:crypto 256 (shaz (jam ship life=1 eny.bowl)))
   =/  =feed:jael
-    [[%2 ~] ship rift=0 [life=1 sec:ex:cic]~]
+    [[%2 ~] ship rift=0 [life=1 sec:ex:cub]~]
   %-  %-  slog
       :~  leaf+"%artemis moon: {(scow %p ship)}"
           leaf+(scow %uw (jam feed))
@@ -75,8 +75,8 @@
   =:  who.mon  ship
       nam.mon  nam
       rol.mon  rol
-      pub.mon  pub:ex:cic
-      sec.mon  sec:ex:cic
+      pub.mon  pub:ex:cub
+      sec.mon  sec:ex:cub
       lif.mon  1
       rif.mon  0
       sed.mon  (jam feed)
