@@ -4,6 +4,6 @@
     image+'/apps/artemis/tile.svg'
     site+/apps/artemis
     version+[1 0 0]
-    website+'https://github.com/abnels/artemis'
+    website+'https://github.com/dalhec-banler/artemis'
     license+'MIT'
 ==

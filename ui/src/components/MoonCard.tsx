@@ -1,6 +1,5 @@
 import { useState, type KeyboardEvent } from 'react';
 import type { Moon, Role } from '../types';
-import { ROLE_META } from '../types';
 import { RoleBadge } from './RoleBadge';
 import { ConfirmDialog } from './ConfirmDialog';
 import {
@@ -15,13 +14,15 @@ import {
 
 interface MoonCardProps {
   moon: Moon;
+  autoExpand?: boolean;
 }
 
-export function MoonCard({ moon }: MoonCardProps) {
-  const [expanded, setExpanded] = useState(false);
+export function MoonCard({ moon, autoExpand }: MoonCardProps) {
+  const [expanded, setExpanded] = useState(autoExpand ?? false);
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(moon.nam);
   const [tagInput, setTagInput] = useState('');
+  const [copied, setCopied] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<{
     title: string;
     message: string;
@@ -36,9 +37,29 @@ export function MoonCard({ moon }: MoonCardProps) {
     personal: '#58a6ff',
   };
 
+  function copyToClipboard(text: string, label: string) {
+    navigator.clipboard.writeText(text);
+    setCopied(label);
+    setTimeout(() => setCopied(null), 2000);
+  }
+
+  function moonBootKey() {
+    return moon.sed.trim();
+  }
+
+  function fileBootCommand() {
+    const patp = moon.who.slice(1);
+    return `./urbit -w ${patp} -k ${patp}.key -c ${patp}`;
+  }
+
+  function directBootCommand() {
+    const patp = moon.who.slice(1);
+    return `./urbit -w ${patp} -G ${moonBootKey()} -c ${patp}`;
+  }
+
   function downloadKey() {
     const patp = moon.who.slice(1);
-    const blob = new Blob([moon.sed], { type: 'text/plain' });
+    const blob = new Blob([`${moonBootKey()}\n`], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -101,6 +122,22 @@ export function MoonCard({ moon }: MoonCardProps) {
               <span className="font-mono text-sm text-lunar-200 truncate">
                 {moon.who}
               </span>
+              <button
+                onClick={(e) => { e.stopPropagation(); copyToClipboard(moon.who, 'name'); }}
+                className="flex-shrink-0 p-1 text-lunar-300 hover:text-lunar-50 transition-colors rounded"
+                title="Copy moon name"
+              >
+                {copied === 'name' ? (
+                  <svg className="w-3.5 h-3.5 text-role-mobile" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <rect x="9" y="9" width="13" height="13" rx="2" />
+                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                  </svg>
+                )}
+              </button>
             </div>
             <div className="flex items-center gap-2">
               <RoleBadge role={moon.rol} />
@@ -141,8 +178,24 @@ export function MoonCard({ moon }: MoonCardProps) {
         {/* expanded panel */}
         {expanded && (
           <div className="border-t border-line px-4 pb-4">
-            {/* actions row */}
+            {/* key actions */}
             <div className="flex flex-wrap gap-2 pt-4 pb-3">
+              <button
+                onClick={() => copyToClipboard(moonBootKey(), 'boot-key')}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-lunar-100 bg-surface-2 hover:bg-surface-3 border border-line rounded-lg transition-colors"
+              >
+                {copied === 'boot-key' ? (
+                  <svg className="w-3.5 h-3.5 text-role-mobile" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <rect x="9" y="9" width="13" height="13" rx="2" />
+                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                  </svg>
+                )}
+                {copied === 'boot-key' ? 'Copied!' : 'Copy Boot Key'}
+              </button>
               <button
                 onClick={downloadKey}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-lunar-100 bg-surface-2 hover:bg-surface-3 border border-line rounded-lg transition-colors"
@@ -150,13 +203,56 @@ export function MoonCard({ moon }: MoonCardProps) {
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                Download Key
+                Download .key
               </button>
+              <button
+                onClick={() => copyToClipboard(fileBootCommand(), 'boot-file')}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-lunar-100 bg-surface-2 hover:bg-surface-3 border border-line rounded-lg transition-colors"
+              >
+                {copied === 'boot-file' ? 'Copied!' : 'Copy -k Boot'}
+              </button>
+              <button
+                onClick={() => copyToClipboard(directBootCommand(), 'boot-direct')}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-lunar-100 bg-surface-2 hover:bg-surface-3 border border-line rounded-lg transition-colors"
+              >
+                {copied === 'boot-direct' ? 'Copied!' : 'Copy -G Boot'}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 pb-3">
+              <div className="bg-surface-0 rounded-lg p-3 border border-line/50">
+                <label className="text-xs text-lunar-300 uppercase tracking-wider mb-1 block">
+                  Moon boot key
+                </label>
+                <div className="font-mono text-xs text-lunar-100 break-all leading-6">
+                  {moonBootKey()}
+                </div>
+              </div>
+              <div className="bg-surface-0 rounded-lg p-3 border border-line/50">
+                <label className="text-xs text-lunar-300 uppercase tracking-wider mb-1 block">
+                  Boot with .key
+                </label>
+                <div className="font-mono text-xs text-lunar-100 break-all leading-6">
+                  {fileBootCommand()}
+                </div>
+              </div>
+              <div className="bg-surface-0 rounded-lg p-3 border border-line/50">
+                <label className="text-xs text-lunar-300 uppercase tracking-wider mb-1 block">
+                  Direct `-G` boot
+                </label>
+                <div className="font-mono text-xs text-lunar-100 break-all leading-6">
+                  {directBootCommand()}
+                </div>
+              </div>
+            </div>
+
+            {/* actions row */}
+            <div className="flex flex-wrap gap-2 pb-3">
               <button
                 onClick={() =>
                   setConfirm({
                     title: 'Cycle Keys',
-                    message: `Generate new keys for ${moon.nam || moon.who}? The old keys will be invalidated. The moon must be rebooted with the new keyfile.`,
+                    message: `Generate new keys for ${moon.nam || moon.who}? The old keys will be invalidated. The moon must be rebooted with the new boot key or .key file.`,
                     label: 'Cycle Keys',
                     action: () => rekeyMoon(moon.who),
                   })
@@ -188,7 +284,7 @@ export function MoonCard({ moon }: MoonCardProps) {
                 onClick={() =>
                   setConfirm({
                     title: 'Forget Moon',
-                    message: `Remove ${moon.nam || moon.who} from Artemis? The moon's keys and seed will be lost. Make sure you've downloaded the keyfile first.`,
+                    message: `Remove ${moon.nam || moon.who} from Artemis? The moon's boot key will be lost. Make sure you've copied or downloaded it first.`,
                     label: 'Forget',
                     action: () => forgetMoon(moon.who),
                   })

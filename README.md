@@ -1,116 +1,118 @@
-# houston
+# artemis
 
-urbit moon dashboard
+urbit moon fleet manager
 
-houston exposes a poke api for your moon utilities:
+artemis is a modernized moon management app for Urbit. It lets you create moons, rotate keys, breach moons, organize them with names, roles, and tags, and keep the current boot key close at hand for recovery or deployment.
 
-- |moon
-- |moon-breach
-- |moon-cycle-keys
+## What Artemis Manages
 
-houston only accepts pokes from our.bowl
+artemis exposes a poke api for moon operations:
 
-jael is still the source of truth for each moons pubkey, life, and rift.
-when a moon is created or rekeyed through houston, houston keeps a copy of the private key.
-the private key / seed is needed when launching the moon for the first time or after a breach.
+- `|moon`
+- `|moon-breach`
+- `|moon-cycle-keys`
 
-moons can be initially booted using the following command:
+artemis only accepts pokes from `our.bowl`.
 
-`./urbit -w <moon-name> -G <seed>`
+jael remains the source of truth for each moon's public key, life, and rift. when a moon is created or rekeyed through artemis, artemis keeps a copy of the current moon boot key so operators can immediately copy it, download a `.key` file, or boot the moon directly.
+
+## Booting A Moon
+
+moons can be initially booted with either the direct boot key or a downloaded `.key` file:
+
+`./urbit -w <moon-name> -G <moon-boot-key> -c <pier-name>`
+
 or
-`/urbit -w sampel-sampel-palnet -G 0wm4W1E.ees11.MtSXj.-51oT.NN-7E.O1uch.2eM0g.2QhRf.KyiER.ke7cN.qynND.qAkrn.sJUOr.CkbEC.JRtiD.gqwz7.DDDYf.Q82M0.ecoac.ag000.1rwg1`
-or
-`./urbit -w sampel-sampel-palnet -k ./sampel-sampel-palnet.key`
 
-the next time you boot, just run:
+`./urbit -w sampel-sampel-palnet -k ./sampel-sampel-palnet.key -c sampel-sampel-palnet`
 
-`./urbit <moon-name>`
-or
-`./urbit sampel-sampel-palnet`
+after the first boot, start the moon normally:
+
+`./urbit <pier-name>`
 
 ## Using The Frontend
 
-the `create` button spawns a new moon. this maps to |moon.
-it can optionally be given a @p. if not, it will create a random moon.
+the `New Moon` flow creates a new moon and assigns it a name and role.
 
-each moon has a `breach` button and a `cycle keys` button. these correspond with |moon-breach and |moon-cycle-keys respectively.
-moons also have a `forget` button. this simply removes the moon from houstons agent state. it doesnt affect the actual moon.
+each moon card supports:
 
-users can `import` a moon, which just adds the moon @p into houston without any metadata.
-this allows existing moons to be tracked and tagged as part of the same database.
-imported moons can still be breached and can still have their keys reset from the houston UI.
-when an imported moon has its keys reset, the new data will be stored in houston.
+- copying the moon boot key
+- downloading a `.key` file
+- copying `-k` and direct `-G` boot commands
+- cycling keys
+- breaching
+- forgetting the moon from artemis state
+- renaming the moon
+- assigning a role
+- adding and removing tags
 
-moons can be given `tags` which are just arbitrary text. this should be useful to track:
+roles are intended to make a fleet easier to reason about at a glance:
 
-- what services the moon is responsible for
-- what machine the moon is running on
-- who operates the moon
+- `mobile`
+- `agent`
+- `dev`
+- `personal`
 
 ## Using The API
 
-houston can be poked by other apps to create / breach / rekey moons. previously, this was only possible through dojo.
-for a spec of the poke API, refer to the source code.
+artemis can be poked by other apps to create, breach, rekey, rename, retag, and reclassify moons.
 
-to get a moons data from houston:
-
-```hoon
-+houston!get ~sampel-sampel-palnet
-```
-
-this is a generator that wraps a scry endpoint.
-
-more cli tools for houston
+to get a moon's data from artemis:
 
 ```hoon
-:houston|create
-:houston|create ~sampel-sampel-palnet
-:houston|tag ~sampel-sampel-palnet 'best moon ever'
-:houston|rekey ~sampel-sampel-palnet
-:houston|breach ~sampel-sampel-palnet
++artemis!get ~sampel-sampel-palnet
 ```
 
-## Installing the Desk From Source
+the desk also includes simple CLI generators:
+
+```hoon
+:artemis|create 'sample moon' %personal
+:artemis|rekey ~sampel-sampel-palnet
+:artemis|breach ~sampel-sampel-palnet
+:artemis|tag ~sampel-sampel-palnet 'edge-node'
+```
+
+## Installing The Desk From Source
 
 in dojo:
 
-```
-|merge %houston our %base
-|mount %houston
-```
-
-in unix:
-
-```
-cd <mounted_houston_desk>
-rm -r ./*
-cp -rL <(urbit)/pkg/base-dev>/* .
-cp -rL <(urbit)/pkg/garden-dev>/* .
-cd <this_repo>/desk/
-./install.sh -w <mounted_houston_desk>
+```hoon
+|merge %artemis our %base
+|mount %artemis
 ```
 
-in dojo:
+copy the desk contents into the mounted desk, then in dojo:
 
+```hoon
+|commit %artemis
+|install our %artemis
 ```
-|commit %houston
-|install our %houston
+
+## UI Development
+
+artemis is built with React, TypeScript, Tailwind CSS, and Vite.
+
+to get started:
+
+```sh
+cd ui
+npm install
 ```
 
-## UI
+for local development, create `ui/.env.local` with:
 
-houston is built primarily using [React], [Typescript], and [Tailwind CSS]. [Vite] ensures that all code and assets are loaded appropriately, bundles the application for distribution and provides a functional dev environment.
+```sh
+VITE_SHIP_URL={URL}
+```
 
-### Getting Started
+then run:
 
-To get started using houston first you need to run `npm install` inside the `ui` directory.
+```sh
+npm run dev
+```
 
-To develop you'll need a running ship to point to. To do so you first need to add a `.env.local` file to the `ui` directory. This file will not be committed. Adding `VITE_SHIP_URL={URL}` where **{URL}** is the URL of the ship you would like to point to, will allow you to run `npm run dev`. This will proxy all requests to the ship except for those powering the interface, allowing you to see live data.
+to produce the distributable frontend bundle:
 
-Regardless of what you run to develop, Vite will hot-reload code changes as you work so you don't have to constantly refresh.
-
-### Deploying
-
-To deploy, run `npm run build` in the `ui` directory which will bundle all the code and assets into the `dist/` folder. This can then be made into a glob, and linked to from the desk.docket-0 file
-
-[urbit.org glob docs](https://developers.urbit.org/reference/additional/dist/glob)
+```sh
+npm run build
+```
