@@ -152,7 +152,7 @@
     =/  who=ship  (slav %p i.t.t.path)
     ``noun+!>((~(get by mons.state) who))
       [%x %mons ~]
-    ``artemis-update+!>([%moons mons.state])
+    ``json+!>((mons-json:hc mons.state))
   ==
 ++  on-leave  on-leave:def
 ++  on-agent  on-agent:def
@@ -222,4 +222,37 @@
   |=  pax=path
   ^-  path
   (weld /(scot %p our.bowl)/artemis/(scot %da now.bowl) pax)
+::
+++  mons-json
+  |=  mons=(map @p mon)
+  ^-  json
+  %+  frond:enjs:format
+  'moons'
+  :-  %a
+  %+  turn  ~(val by mons)
+    mon-json
+::
+++  mon-json
+  |=  =mon
+  ^-  json
+  %-  pairs:enjs:format
+  :~
+      ['who' [%s (scot %p who.mon)]]
+      ['nam' [%s nam.mon]]
+      ['rol' [%s rol.mon]]
+      ['pub' [%s (scot %ud pub.mon)]]
+      ['sec' [%s (scot %ud sec.mon)]]
+      ['lif' [%s (scot %ud lif.mon)]]
+      ['rif' [%s (scot %ud rif.mon)]]
+      ['sed' [%s (scot %uw sed.mon)]]
+      ['dat' (sect:enjs:format dat.mon)]
+      :-  'tag'  :-  %a
+        %+  turn  tag.mon
+          tag-json
+  ==
+::
+++  tag-json
+  |=  tag=@tas
+  ^-  json
+  [%s tag]
 --
