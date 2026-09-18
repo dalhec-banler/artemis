@@ -173,7 +173,17 @@
       ['writs' (pairs:enjs:format writs)]
       ['unreads' (chat-json /unreads)]
       ['groups' groups-light]
+      ['contacts' contacts-all]
   ==
+::
+::  +contacts-all: the planet's address book, for names and pictures
+::
+++  contacts-all
+  ^-  json
+  =/  u=(unit json)
+    %-  mole
+    |.  .^(json %gx /(scot %p our.bowl)/contacts/(scot %da now.bowl)/all/json)
+  ?~(u ~ u.u)
 ::
 ::  +groups-light: the planet's groups, by flag — enough for a phone to
 ::  offer "join the same groups as your planet"
