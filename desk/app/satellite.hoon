@@ -38,6 +38,9 @@
   |=  old=vase
   ^-  (quip card _this)
   :_  this(state !<(state-0 old))
+  ::  a reload keeps its live %chat subscription; watching again on the
+  ::  same wire is an error
+  ?:  (~(has by wex.bowl) [/chat our.bowl %chat])  ~
   ~[watch-chat:hc]
 ::
 ++  on-poke
@@ -169,7 +172,18 @@
       ['dms' dms]
       ['writs' (pairs:enjs:format writs)]
       ['unreads' (chat-json /unreads)]
+      ['groups' groups-light]
   ==
+::
+::  +groups-light: the planet's groups, by flag — enough for a phone to
+::  offer "join the same groups as your planet"
+::
+++  groups-light
+  ^-  json
+  =/  u=(unit json)
+    %-  mole
+    |.  .^(json %gx /(scot %p our.bowl)/groups/(scot %da now.bowl)/groups/light/json)
+  ?~(u ~ u.u)
 ::
 ::  +handle: a moon's request, re-issued locally as the planet
 ::
@@ -182,8 +196,31 @@
     %-  of
     :~  send-dm+(ot ~[ship+(se %p) text+so])
         read-dm+(se %p)
+        refresh+ul
+        invite-moon+so
     ==
   ?-    -.act
+      %refresh
+    ::  a fresh snapshot for everyone watching — a moon asks when a
+    ::  DM thread it has never seen starts sending facts
+    ~[[%give %fact ~[/moon/chat] %json !>(snapshot)]]
+  ::
+      %invite-moon
+    ::  the planet invites the asking moon into one of its groups, so the
+    ::  moon's own %groups can join with the token (phase A of groups)
+    =/  action=json
+      %+  frond:enjs:format  'invite'
+      %-  pairs:enjs:format
+      :~  ['flag' s+`@t`+.act]
+          ['ships' a+~[s+(scot %p from)]]
+          ['a-invite' (pairs:enjs:format ~[['token' ~] ['note' ~]])]
+      ==
+    =/  tub=tube:clay
+      .^  tube:clay  %cc
+          /(scot %p our.bowl)/groups/(scot %da now.bowl)/json/group-action-4
+      ==
+    ~[[%pass /fwd/invite-moon %agent [our.bowl %groups] %poke %group-action-4 (tub !>(action))]]
+  ::
       %send-dm
     =/  [=ship text=@t]  +.act
     =/  id=@t  (rap 3 (scot %p our.bowl) '/' (scot %ud now.bowl) ~)
